@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-<head onload="getProfile()">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
-<body>
-    
-
+<body onload="getProfile()">
+    <div>
+        <a href="./login.html" onclick="logout()" style="color: black;">Logout</a>
+    </div>
+    <h1 id="pName"></h1>
+    <h1 id="pEmail"></h1>
+    <h1 id="pPhone"></h1>
+    <h1 id="pGender"></h1>
     <script src="app.js"></script>
 </body>
 </html>

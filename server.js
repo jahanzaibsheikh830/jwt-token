@@ -6,7 +6,7 @@ var morgan = require("morgan");
 const mongoose = require("mongoose");
 var bcrypt = require("bcrypt-inzi");
 var jwt = require("jsonwebtoken")
-var SERVER_SECRET = process.env.SECRET || "4321"
+var SERVER_SECRET = "4321"
 let dbURI = "mongodb+srv://dbjahan:dbjahan@cluster0.8ric4.mongodb.net/test?retryWrites=true&w=majority";
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -40,11 +40,9 @@ var userModel = mongoose.model('users', userSchema);
 
 var app = express();
 
-
 app.use(bodyParser.json());
 app.use(cors());
 app.use(morgan('dev'));
-
 app.use("/", express.static(path.resolve(path.join(__dirname, "public"))))
 app.post('/signup', (req, res, next) => {
     if (!req.body.name
@@ -123,15 +121,13 @@ app.post('/login', (req, res, next) => {
         else if (user) {
             bcrypt.varifyHash(req.body.lpassword, user.password).then(isMatched => {
                 if (isMatched) {
-                    var token = jwt.sign({
+                    const token = jwt.sign({
                         id: user._id,
                         name: user.name,
                         email: user.email,
                         phon: user.phone,
-                        gender: user.gender,
-                        ip: req.connection.remoteAddress
-                    }, SERVER_SECRET)
-
+                        gender: user.gender
+                    }, SERVER_SECRET, { expiresIn: "10s" })
                     res.send({
                         status: 200,
                         message: "login success",
@@ -145,7 +141,6 @@ app.post('/login', (req, res, next) => {
                     });
 
                 } else {
-                    console.log(user)
                     console.log("not matched");
                     res.status(401).send({
                         message: "incorrect password"
@@ -162,42 +157,37 @@ app.post('/login', (req, res, next) => {
         }
     })
 });
-// app.get("/profile", (req, res, next) => {
-//     if (!req.body.userToken) {
-//         res.status(403).send(`
-//             please provide token in headers.
-//             e.g:
-//             {
-//                 "token": "h2345jnfiuwfn23423...kj345352345"
-//             }`)
-//         return;
-//     }
+app.get("/profile", (req, res, next) => {
+    if (req.headers.authentication) {
+        jwt.verify(req.headers.authentication.split(' ')[1], SERVER_SECRET, function (err, decoded) {
+            if (!err) {
+                console.log("user: ", decoded)
+                userModel.findById(decoded.id, 'name email phone gender createdOn',
+                    function (err, doc) {
+                        if (!err) {
+                            res.send({
+                                status: 200,
+                                profile: doc,
+                            })
+                        } else {
+                            res.status(500).send({
+                                message: "server error"
+                            })
+                        }
+                    })
+            }
+            else {
+                res.status(401).send({
+                    message: err
+                })
+                console.log(err)
+            }
+        });
 
-//     var decodedData = jwt.verify(req.body.userToken, SERVER_SECRET);
-//     console.log("user: ", decodedData)
+    }
 
-//     userModel.findById(decodedData.id, 'name email phone gender createdOn',
-//         function (err, doc) {
-//             if (!err) {
-//                 res.send({
-//                     profile: doc
-//                 })
-//             } else {
-//                 res.status(500).send({
-//                     message: "server error"
-//                 })
-//             }
-
-//         })
-// })
+})
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log("server is running on: ", PORT);
 })
-
-
-
-
-
-
-

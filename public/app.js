@@ -18,7 +18,7 @@ function signup() {
                 alert(jsonRes.message);
                 location.href = "./login.html"
             }
-            else{
+            else {
                 alert(jsonRes.message);
             }
         }
@@ -37,13 +37,12 @@ function login() {
     Http.onreadystatechange = (e) => {
         if (Http.readyState === 4) {
             let jsonRes = JSON.parse(Http.responseText)
-            if(jsonRes.status === 200){
+            if (jsonRes.status === 200) {
                 alert(jsonRes.message);
-                localStorage.setItem("userToken",jsonRes.token)
+                localStorage.setItem('userToken', JSON.stringify(jsonRes.token))
                 location.href = "./profile.html"
-                getProfile();
             }
-            else{
+            else {
                 alert(jsonRes.message);
             }
         }
@@ -51,23 +50,28 @@ function login() {
     return false
 }
 
-function getProfile(){
-    var userToken = localStorage.getItem('userToken')
+function getProfile() {
+    let userToken = JSON.parse(localStorage.getItem('userToken'))
     const Http = new XMLHttpRequest();
-    Http.open("POST", url + "/profile");
-    Http.setRequestHeader("Content-Type", "application/json");
-    Http.send({
-        userToken : userToken
-    });  
+    Http.open("GET", "http://localhost:3000/profile");
+    Http.setRequestHeader("Authentication", `Bearer ${userToken}`);
+    Http.send();
     Http.onreadystatechange = (e) => {
-        if(Http.readyState === 4){
-            let jsonRes = JSON.parse(Http.responseText);
-            document.getElementById('pName').innerHTML = jsonRes.name 
-            location.href = "./profile.html"
-        }
-        else{
-            location.href = "./login.html"
-
+        if (Http.readyState === 4) {
+            var jsonRes = JSON.parse(Http.responseText);
+            if(jsonRes.status === 200) {
+                document.getElementById('pName').innerText = jsonRes.profile.name
+                document.getElementById('pEmail').innerText = jsonRes.profile.email
+                document.getElementById('pPhone').innerText = jsonRes.profile.phone
+                document.getElementById('pGender').innerText = jsonRes.profile.gender     
+            }else{
+                location.href = "./login.html"
+            }
         }
     }
+    return false
+}
+function logout(){  
+    localStorage.removeItem('userToken')
+    href.location = "./login.html"
 }
