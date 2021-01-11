@@ -1,5 +1,5 @@
-// var url = "https://mongodb-signup.herokuapp.com"
-var url = "http://localhost:3000"
+var url = "https://mongodb-signup.herokuapp.com"
+//var url = "http://localhost:3000"
 function signup() {
     const Http = new XMLHttpRequest();
     Http.open("POST", url + "/signup");
@@ -53,7 +53,7 @@ function login() {
 function getProfile() {
     let userToken = JSON.parse(localStorage.getItem('userToken'))
     const Http = new XMLHttpRequest();
-    Http.open("GET", "http://localhost:3000/profile");
+    Http.open("GET", url +"/profile");
     Http.setRequestHeader("Authentication", `Bearer ${userToken}`);
     Http.send();
     Http.onreadystatechange = (e) => {
